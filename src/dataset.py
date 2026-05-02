@@ -11,7 +11,8 @@ from typing import Tuple, Dict, List
 import numpy as np
 from PIL import Image
 import torch
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, random_split, Subset
+from sklearn.model_selection import StratifiedShuffleSplit
 from torchvision import transforms
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
@@ -74,6 +75,25 @@ class AlbumentationsDataset(Dataset):
             res = self.transform(image=img)
             img = res["image"]
         return img, label
+
+
+def stratified_split(dataset_root, val_size=0.1, test_size=0.1, seed=42):
+    """Perform stratified train/val/test split preserving class distribution."""
+    ds = AlbumentationsDataset(dataset_root, transform=None)
+    X = [p for p, _ in ds.samples]
+    y = [lab for _, lab in ds.samples]
+    if len(y) == 0:
+        raise RuntimeError(f"No images found under {dataset_root}.")
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=(val_size + test_size), random_state=seed)
+    train_idx, temp_idx = next(sss.split(X, y))
+    # split temp into val/test
+    rel = test_size / (test_size + val_size)
+    sss2 = StratifiedShuffleSplit(n_splits=1, test_size=rel, random_state=seed)
+    temp_y = [y[i] for i in temp_idx]
+    val_idx_rel, test_idx_rel = next(sss2.split([X[i] for i in temp_idx], temp_y))
+    val_idx = [temp_idx[i] for i in val_idx_rel]
+    test_idx = [temp_idx[i] for i in test_idx_rel]
+    return train_idx, val_idx, test_idx, ds.class_to_idx
 
 
 def get_dataloaders(data_dir, img_size=224, batch_size=32, num_workers=2):
