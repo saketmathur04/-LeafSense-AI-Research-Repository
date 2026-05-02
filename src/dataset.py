@@ -96,6 +96,23 @@ def stratified_split(dataset_root, val_size=0.1, test_size=0.1, seed=42):
     return train_idx, val_idx, test_idx, ds.class_to_idx
 
 
+class WrappedSubset(Dataset):
+    """Wraps a Subset to apply a specific transform, since Subsets don't carry transforms."""
+    def __init__(self, subset, transform):
+        self.subset = subset
+        self.transform = transform
+    def __len__(self):
+        return len(self.subset)
+    def __getitem__(self, idx):
+        img, label = self.subset[idx]
+        if self.transform:
+            res = self.transform(image=np.array(img))
+            img = res["image"]
+        else:
+            img = transforms.ToTensor()(img)
+        return img, label
+
+
 def get_dataloaders(data_dir, img_size=224, batch_size=32, num_workers=2):
     """
     Simple dataloader factory with random 80/10/10 split.
