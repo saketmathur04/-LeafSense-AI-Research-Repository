@@ -1,8 +1,15 @@
 # dataset.py
 """
 dataset.py
-Provides PyTorch DataLoaders with Albumentations-based transforms
-for the plant disease classification dataset.
+
+Provides:
+ - stratified_train_val_test_split()
+ - PyTorch DataLoaders with Albumentations transforms
+ - option to include a synthetic images directory (synthetic/<class>/images)
+ - WeightedRandomSampler for balanced training
+
+Compatibility:
+ - Exposes both make_dataloaders(...) and get_dataloaders(...) (legacy signature).
 """
 
 import os
