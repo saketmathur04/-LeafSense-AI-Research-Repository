@@ -150,23 +150,15 @@ def make_dataloaders(root_dir, img_size=224, batch_size=32, val_batch=64,
     return train_loader, val_loader, test_loader, class_to_idx
 
 
-def get_dataloaders(data_dir, img_size=224, batch_size=32, num_workers=2):
+# Compatibility wrapper for older code (your original train.py used get_dataloaders)
+def get_dataloaders(data_dir, img_size=256, batch_size=32, num_workers=2):
     """
-    Simple dataloader factory with random 80/10/10 split.
-    Returns train_loader, val_loader, test_loader, class_names.
+    Legacy signature compatibility function.
+    Calls make_dataloaders with default val/test splits and no synthetic merging.
     """
-    full_ds = AlbumentationsDataset(data_dir, transform=None)
-    class_names = sorted(full_ds.class_to_idx.keys())
-
-    # 80/10/10 split
-    total = len(full_ds)
-    train_size = int(0.8 * total)
-    val_size = int(0.1 * total)
-    test_size = total - train_size - val_size
-    train_ds, val_ds, test_ds = random_split(full_ds, [train_size, val_size, test_size])
-
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
-    val_loader = DataLoader(val_ds, batch_size=batch_size * 2, shuffle=False, num_workers=num_workers, pin_memory=True)
-    test_loader = DataLoader(test_ds, batch_size=batch_size * 2, shuffle=False, num_workers=num_workers, pin_memory=True)
-
-    return train_loader, val_loader, test_loader, class_names
+    train_loader, val_loader, test_loader, classes = make_dataloaders(
+        data_dir, img_size=img_size, batch_size=batch_size, val_batch=batch_size*2,
+        val_size=0.1, test_size=0.1, seed=42,
+        use_sampler=True, num_workers=num_workers
+    )
+    return train_loader, val_loader, test_loader, sorted(list(classes.keys()))
