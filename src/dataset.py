@@ -11,7 +11,7 @@ from typing import Tuple, Dict, List
 import numpy as np
 from PIL import Image
 import torch
-from torch.utils.data import Dataset, DataLoader, random_split, Subset
+from torch.utils.data import Dataset, DataLoader, random_split, Subset, WeightedRandomSampler
 from sklearn.model_selection import StratifiedShuffleSplit
 from torchvision import transforms
 import albumentations as A
@@ -111,6 +111,43 @@ class WrappedSubset(Dataset):
         else:
             img = transforms.ToTensor()(img)
         return img, label
+
+
+def make_dataloaders(root_dir, img_size=224, batch_size=32, val_batch=64,
+                     val_size=0.1, test_size=0.1, seed=42,
+                     use_sampler=True, num_workers=4):
+    """
+    Primary dataloader factory with stratified split and class-balanced sampling.
+    root_dir: dataset root with class subfolders
+    """
+    train_idx, val_idx, test_idx, class_to_idx = stratified_split(root_dir, val_size=val_size, test_size=test_size, seed=seed)
+    ds_full = AlbumentationsDataset(root_dir, transform=None)
+
+    train_ds = Subset(ds_full, train_idx)
+    val_ds = Subset(ds_full, val_idx)
+    test_ds = Subset(ds_full, test_idx)
+
+    # attach transforms
+    train_ds = WrappedSubset(train_ds, get_alb_transforms(img_size, train=True))
+    val_ds = WrappedSubset(val_ds, get_alb_transforms(img_size, train=False))
+    test_ds = WrappedSubset(test_ds, get_alb_transforms(img_size, train=False))
+
+    # Sampler to balance classes in training
+    full_labels = [y for _, y in ds_full.samples]
+    train_labels = [full_labels[i] for i in train_idx]
+    num_classes = len(class_to_idx)
+    class_sample_count = np.array([train_labels.count(t) for t in range(num_classes)])
+    class_sample_count = np.where(class_sample_count == 0, 1, class_sample_count)
+    weights = 1.0 / class_sample_count
+    samples_weight = [weights[t] for t in train_labels]
+    sampler = WeightedRandomSampler(samples_weight, num_samples=len(samples_weight), replacement=True)
+
+    train_loader = DataLoader(train_ds, batch_size=batch_size, sampler=(sampler if use_sampler else None),
+                              shuffle=(not use_sampler), num_workers=num_workers, pin_memory=True)
+    val_loader = DataLoader(val_ds, batch_size=val_batch, shuffle=False, num_workers=num_workers, pin_memory=True)
+    test_loader = DataLoader(test_ds, batch_size=val_batch, shuffle=False, num_workers=num_workers, pin_memory=True)
+
+    return train_loader, val_loader, test_loader, class_to_idx
 
 
 def get_dataloaders(data_dir, img_size=224, batch_size=32, num_workers=2):
