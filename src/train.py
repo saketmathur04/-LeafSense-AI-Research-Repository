@@ -32,9 +32,10 @@ def main():
     model = build_model(num_classes=num_classes)
     model.to(device)
 
-    # Loss & Optimizer
+    # Loss, Optimizer & Scheduler
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS)
 
     history = {'train_loss': [], 'val_loss': [], 'train_acc': [], 'val_acc': []}
 
@@ -109,6 +110,8 @@ def main():
         history['val_acc'].append(epoch_val_acc)
 
         print(f"Train Loss: {epoch_loss:.4f} | Train Acc: {epoch_acc*100:.2f}% | Val Loss: {epoch_val_loss:.4f} | Val Acc: {epoch_val_acc*100:.2f}%")
+
+        scheduler.step()
 
         # Save latest checkpoint
         torch.save({
