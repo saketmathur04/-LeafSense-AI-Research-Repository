@@ -12,7 +12,7 @@ def build_model(name="deit_base_patch16_224", num_classes=55, pretrained=True, d
     """
     name: a timm model name, e.g. 'deit_base_patch16_224', 'vit_base_patch16_224', 'resnet50', 'efficientnet_b0'
     """
-    model = timm.create_model(name, pretrained=pretrained, num_classes=num_classes, drop_rate=dropout)
+    model = timm.create_model(name, pretrained=pretrained, num_classes=num_classes, drop_rate=dropout, drop_path_rate=0.1)
     return model
 
 if __name__ == "__main__":
