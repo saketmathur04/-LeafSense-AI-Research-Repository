@@ -36,6 +36,8 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
+    history = {'train_loss': [], 'val_loss': [], 'train_acc': [], 'val_acc': []}
+
     # Basic Training Loop
     for epoch in range(EPOCHS):
         model.train()
@@ -65,7 +67,33 @@ def main():
 
         epoch_loss = train_loss / train_total
         epoch_acc = train_correct / train_total
-        print(f"Train Loss: {epoch_loss:.4f} | Train Acc: {epoch_acc*100:.2f}%")
+
+        # Validation Phase
+        model.eval()
+        val_loss = 0.0
+        val_correct = 0
+        val_total = 0
+
+        with torch.no_grad():
+            for inputs, targets in val_loader:
+                inputs, targets = inputs.to(device), targets.to(device)
+                outputs = model(inputs)
+                loss = criterion(outputs, targets)
+
+                val_loss += loss.item() * inputs.size(0)
+                _, predicted = outputs.max(1)
+                val_total += targets.size(0)
+                val_correct += predicted.eq(targets).sum().item()
+
+        epoch_val_loss = val_loss / val_total
+        epoch_val_acc = val_correct / val_total
+
+        history['train_loss'].append(epoch_loss)
+        history['val_loss'].append(epoch_val_loss)
+        history['train_acc'].append(epoch_acc)
+        history['val_acc'].append(epoch_val_acc)
+
+        print(f"Train Loss: {epoch_loss:.4f} | Train Acc: {epoch_acc*100:.2f}% | Val Loss: {epoch_val_loss:.4f} | Val Acc: {epoch_val_acc*100:.2f}%")
 
 if __name__ == "__main__":
     main()
