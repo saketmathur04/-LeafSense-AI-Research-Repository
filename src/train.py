@@ -38,8 +38,19 @@ def main():
 
     history = {'train_loss': [], 'val_loss': [], 'train_acc': [], 'val_acc': []}
 
+    os.makedirs("checkpoints", exist_ok=True)
+    ckpt_path = "checkpoints/latest_checkpoint.pth"
+    start_epoch = 0
+    if os.path.exists(ckpt_path):
+        print(f"Resuming from {ckpt_path}")
+        ckpt = torch.load(ckpt_path, map_location=device)
+        model.load_state_dict(ckpt['model_state_dict'])
+        optimizer.load_state_dict(ckpt['optimizer_state_dict'])
+        start_epoch = ckpt['epoch'] + 1
+        history = ckpt.get('history', history)
+
     # Basic Training Loop
-    for epoch in range(EPOCHS):
+    for epoch in range(start_epoch, EPOCHS):
         model.train()
         train_loss = 0.0
         train_correct = 0
@@ -94,6 +105,14 @@ def main():
         history['val_acc'].append(epoch_val_acc)
 
         print(f"Train Loss: {epoch_loss:.4f} | Train Acc: {epoch_acc*100:.2f}% | Val Loss: {epoch_val_loss:.4f} | Val Acc: {epoch_val_acc*100:.2f}%")
+
+        # Save Checkpoint
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'history': history,
+        }, ckpt_path)
 
 if __name__ == "__main__":
     main()
