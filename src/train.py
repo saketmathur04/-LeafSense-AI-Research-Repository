@@ -40,7 +40,11 @@ def main():
 
     os.makedirs("checkpoints", exist_ok=True)
     ckpt_path = "checkpoints/latest_checkpoint.pth"
+    best_model_path = "best_vit_model.pth"
     start_epoch = 0
+    best_val_loss = float('inf')
+    patience = 7
+    epochs_no_improve = 0
     if os.path.exists(ckpt_path):
         print(f"Resuming from {ckpt_path}")
         ckpt = torch.load(ckpt_path, map_location=device)
@@ -106,13 +110,26 @@ def main():
 
         print(f"Train Loss: {epoch_loss:.4f} | Train Acc: {epoch_acc*100:.2f}% | Val Loss: {epoch_val_loss:.4f} | Val Acc: {epoch_val_acc*100:.2f}%")
 
-        # Save Checkpoint
+        # Save latest checkpoint
         torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'history': history,
         }, ckpt_path)
+
+        # Early Stopping & Best Model
+        if epoch_val_loss < best_val_loss:
+            best_val_loss = epoch_val_loss
+            epochs_no_improve = 0
+            torch.save(model.state_dict(), best_model_path)
+            print(f"🌟 New best model saved (Val Loss: {best_val_loss:.4f})")
+        else:
+            epochs_no_improve += 1
+            print(f"⚠️ No improvement in validation loss for {epochs_no_improve} epoch(s).")
+            if epochs_no_improve >= patience:
+                print(f"🛑 Early stopping triggered after {epoch + 1} epochs.")
+                break
 
 if __name__ == "__main__":
     main()
