@@ -38,3 +38,41 @@ def plot_curves(history, out_dir="."):
     out_path = os.path.join(out_dir, "training_curves_detailed.png")
     plt.savefig(out_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
+
+
+class FocalLoss(torch.nn.Module):
+    def __init__(self, weight=None, gamma=2.0, reduction='mean', label_smoothing=0.0):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.weight = weight
+        self.reduction = reduction
+        self.label_smoothing = label_smoothing
+
+    def forward(self, inputs, targets):
+        ce_loss = torch.nn.functional.cross_entropy(
+            inputs, targets, weight=self.weight, reduction='none', label_smoothing=self.label_smoothing
+        )
+        pt = torch.exp(-ce_loss)
+        focal_loss = ((1 - pt) ** self.gamma) * ce_loss
+
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        else:
+            return focal_loss
+
+
+import numpy as np
+
+def mixup_data(x, y, alpha=0.4):
+    if alpha <= 0:
+        return x, y, None, 1.0
+    lam = np.random.beta(alpha, alpha)
+    index = torch.randperm(x.size(0)).to(x.device)
+    mixed_x = lam * x + (1 - lam) * x[index, :]
+    y_a, y_b = y, y[index]
+    return mixed_x, y_a, y_b, lam
+
+def mixup_criterion(criterion, pred, y_a, y_b, lam):
+    return lam * criterion(pred, y_a) + (1 - lam) * criterion(pred, y_b)
