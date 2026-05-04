@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from dataset import get_dataloaders
 from model import build_model
-from utils import FocalLoss
+from utils import FocalLoss, mixup_data, mixup_criterion
 
 # Config
 DATA_DIR = "./data/plant-disease-classification-merged-dataset"
@@ -18,6 +18,7 @@ IMG_SIZE = 224
 BATCH_SIZE = 32
 EPOCHS = 10
 LR = 3e-4
+MIXUP_ALPHA = 0.2
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -65,10 +66,13 @@ def main():
         pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{EPOCHS} [Train]")
         for inputs, targets in pbar:
             inputs, targets = inputs.to(device), targets.to(device)
+            
+            # Apply MixUp
+            inputs, targets_a, targets_b, lam = mixup_data(inputs, targets, alpha=MIXUP_ALPHA)
 
             optimizer.zero_grad()
             outputs = model(inputs)
-            loss = criterion(outputs, targets)
+            loss = mixup_criterion(criterion, outputs, targets_a, targets_b, lam)
             loss.backward()
             optimizer.step()
 
