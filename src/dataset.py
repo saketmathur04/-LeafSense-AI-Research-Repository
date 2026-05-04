@@ -13,6 +13,7 @@ Compatibility:
 """
 
 import os
+import shutil
 from pathlib import Path
 from typing import Tuple, Dict, List
 import numpy as np
@@ -120,13 +121,44 @@ class WrappedSubset(Dataset):
         return img, label
 
 
+def _merge_synthetic_into_root(dataset_root, synthetic_dir):
+    """
+    Hard-links synthetic GAN images into the training dataset folder
+    to avoid data duplication while balancing classes.
+    """
+    if not os.path.exists(synthetic_dir):
+        return
+    
+    print(f"Merging synthetic images from {synthetic_dir} into {dataset_root}...")
+    for class_name in os.listdir(synthetic_dir):
+        syn_class_path = os.path.join(synthetic_dir, class_name)
+        real_class_path = os.path.join(dataset_root, class_name)
+        
+        if not os.path.isdir(syn_class_path) or not os.path.exists(real_class_path):
+            continue
+            
+        for img_name in os.listdir(syn_class_path):
+            if img_name.endswith(('.png', '.jpg', '.jpeg')):
+                src = os.path.join(syn_class_path, img_name)
+                dst = os.path.join(real_class_path, img_name)
+                if not os.path.exists(dst):
+                    try:
+                        os.link(src, dst)
+                    except OSError:
+                        # Fallback to copy if hard links not supported
+                        shutil.copy2(src, dst)
+
+
 def make_dataloaders(root_dir, img_size=224, batch_size=32, val_batch=64,
                      val_size=0.1, test_size=0.1, seed=42,
-                     use_sampler=True, num_workers=4):
+                     use_sampler=True, num_workers=4, synthetic_dir=None):
     """
     Primary dataloader factory with stratified split and class-balanced sampling.
     root_dir: dataset root with class subfolders
     """
+    if synthetic_dir:
+        _merge_synthetic_into_root(root_dir, synthetic_dir)
+
     train_idx, val_idx, test_idx, class_to_idx = stratified_split(root_dir, val_size=val_size, test_size=test_size, seed=seed)
     ds_full = AlbumentationsDataset(root_dir, transform=None)
 
