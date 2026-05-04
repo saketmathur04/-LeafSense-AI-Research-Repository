@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from dataset import get_dataloaders
 from model import build_model
+from utils import FocalLoss
 
 # Config
 DATA_DIR = "./data/plant-disease-classification-merged-dataset"
@@ -33,7 +34,7 @@ def main():
     model.to(device)
 
     # Loss, Optimizer & Scheduler
-    criterion = nn.CrossEntropyLoss()
+    criterion = FocalLoss(gamma=2.0, label_smoothing=0.1)
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS)
 
