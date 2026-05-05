@@ -65,3 +65,64 @@ class Discriminator(nn.Module):
         emb = self.embed(labels)
         proj = self.fc_emb(emb).view(-1, 1)
         return out + proj
+
+def train_gan(data_dir, epochs=100, batch_size=128, lr=0.0002, nz=128, img_size=64):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Training GAN on {device}")
+
+    ds = SimpleImageFolder(data_dir, img_size=img_size)
+    loader = DataLoader(ds, batch_size=batch_size, shuffle=True, num_workers=2, drop_last=True)
+    n_classes = len(ds.classes)
+
+    netG = Generator(nz=nz, n_classes=n_classes).to(device)
+    netD = Discriminator(n_classes=n_classes).to(device)
+    
+    criterion = nn.BCEWithLogitsLoss()
+    optD = torch.optim.Adam(netD.parameters(), lr=lr, betas=(0.5, 0.999))
+    optG = torch.optim.Adam(netG.parameters(), lr=lr, betas=(0.5, 0.999))
+
+    os.makedirs("gan_checkpoints", exist_ok=True)
+
+    for epoch in range(epochs):
+        pbar = tqdm(loader, desc=f"Epoch {epoch+1}/{epochs}")
+        for real_imgs, labels in pbar:
+            b_size = real_imgs.size(0)
+            real_imgs = real_imgs.to(device)
+            labels = labels.to(device)
+
+            # Train D
+            netD.zero_grad()
+            real_out = netD(real_imgs, labels)
+            errD_real = criterion(real_out, torch.ones_like(real_out))
+            
+            noise = torch.randn(b_size, nz, device=device)
+            fake_imgs = netG(noise, labels)
+            fake_out = netD(fake_imgs.detach(), labels)
+            errD_fake = criterion(fake_out, torch.zeros_like(fake_out))
+            
+            errD = errD_real + errD_fake
+            errD.backward()
+            optD.step()
+
+            # Train G
+            netG.zero_grad()
+            out = netD(fake_imgs, labels)
+            errG = criterion(out, torch.ones_like(out))
+            errG.backward()
+            optG.step()
+
+            pbar.set_postfix({'D_loss': f"{errD.item():.4f}", 'G_loss': f"{errG.item():.4f}"})
+
+        if (epoch+1) % 10 == 0:
+            torch.save({
+                'epoch': epoch,
+                'netG': netG.state_dict(),
+                'netD': netD.state_dict(),
+            }, f"gan_checkpoints/gan_epoch_{epoch+1}.pth")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data', type=str, required=True, help="Path to dataset root")
+    parser.add_argument('--epochs', type=int, default=100)
+    args = parser.parse_args()
+    train_gan(args.data, epochs=args.epochs)
