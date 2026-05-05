@@ -182,9 +182,12 @@ def make_dataloaders(root_dir, img_size=224, batch_size=32, val_batch=64,
     sampler = WeightedRandomSampler(samples_weight, num_samples=len(samples_weight), replacement=True)
 
     train_loader = DataLoader(train_ds, batch_size=batch_size, sampler=(sampler if use_sampler else None),
-                              shuffle=(not use_sampler), num_workers=num_workers, pin_memory=True)
-    val_loader = DataLoader(val_ds, batch_size=val_batch, shuffle=False, num_workers=num_workers, pin_memory=True)
-    test_loader = DataLoader(test_ds, batch_size=val_batch, shuffle=False, num_workers=num_workers, pin_memory=True)
+                              shuffle=(not use_sampler), num_workers=num_workers, pin_memory=True, 
+                              persistent_workers=True, prefetch_factor=2)
+    val_loader = DataLoader(val_ds, batch_size=val_batch, shuffle=False, num_workers=num_workers, 
+                            pin_memory=True, persistent_workers=True, prefetch_factor=2)
+    test_loader = DataLoader(test_ds, batch_size=val_batch, shuffle=False, num_workers=num_workers, 
+                             pin_memory=True, persistent_workers=True, prefetch_factor=2)
 
     return train_loader, val_loader, test_loader, class_to_idx
 
