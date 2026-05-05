@@ -55,6 +55,7 @@ def main():
         optimizer.load_state_dict(ckpt['optimizer_state_dict'])
         start_epoch = ckpt['epoch'] + 1
     scaler = torch.amp.GradScaler('cuda')
+    accumulation_steps = 4
 
     # Basic Training Loop
     for epoch in range(start_epoch, EPOCHS):
@@ -64,23 +65,26 @@ def main():
         train_total = 0
 
         pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{EPOCHS} [Train]")
-        for inputs, targets in pbar:
+        optimizer.zero_grad()
+        for i, (inputs, targets) in enumerate(pbar):
             inputs, targets = inputs.to(device), targets.to(device)
             
             # Apply MixUp
             inputs, targets_a, targets_b, lam = mixup_data(inputs, targets, alpha=MIXUP_ALPHA)
 
-            optimizer.zero_grad()
-
             with torch.amp.autocast('cuda'):
                 outputs = model(inputs)
                 loss = mixup_criterion(criterion, outputs, targets_a, targets_b, lam)
+                loss = loss / accumulation_steps
 
             scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
+            
+            if (i + 1) % accumulation_steps == 0:
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad()
 
-            train_loss += loss.item() * inputs.size(0)
+            train_loss += (loss.item() * accumulation_steps) * inputs.size(0)
             _, predicted = outputs.max(1)
             train_total += targets.size(0)
             train_correct += predicted.eq(targets).sum().item()
