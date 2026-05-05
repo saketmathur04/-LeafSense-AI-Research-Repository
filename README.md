@@ -32,6 +32,22 @@ data/
 
 > **Note:** The dataset is not included in this repository due to size constraints. 
 
+## GAN Training & Synthetic Data Generation
+
+To handle extreme class imbalance in rare plant diseases, this repository includes a Conditional DCGAN implementation.
+
+### Training the GAN
+```bash
+python src/gan.py --data ./data/plant-disease-classification-merged-dataset --epochs 100
+```
+This will generate checkpoint files in the `gan_checkpoints/` directory.
+
+### Generating Synthetic Images
+Once the GAN is trained, you can generate synthetic images for minority classes:
+```bash
+python src/generate.py --ckpt gan_checkpoints/gan_epoch_100.pth --num_images 500 --class_idx 12 --out_dir synthetic_data
+```
+
 ## Status
 
 🚧 Under active development
