@@ -54,7 +54,7 @@ def main():
         model.load_state_dict(ckpt['model_state_dict'])
         optimizer.load_state_dict(ckpt['optimizer_state_dict'])
         start_epoch = ckpt['epoch'] + 1
-        history = ckpt.get('history', history)
+    scaler = torch.amp.GradScaler('cuda')
 
     # Basic Training Loop
     for epoch in range(start_epoch, EPOCHS):
@@ -71,10 +71,14 @@ def main():
             inputs, targets_a, targets_b, lam = mixup_data(inputs, targets, alpha=MIXUP_ALPHA)
 
             optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = mixup_criterion(criterion, outputs, targets_a, targets_b, lam)
-            loss.backward()
-            optimizer.step()
+
+            with torch.amp.autocast('cuda'):
+                outputs = model(inputs)
+                loss = mixup_criterion(criterion, outputs, targets_a, targets_b, lam)
+
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             train_loss += loss.item() * inputs.size(0)
             _, predicted = outputs.max(1)
