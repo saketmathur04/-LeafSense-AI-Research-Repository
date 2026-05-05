@@ -76,3 +76,29 @@ def mixup_data(x, y, alpha=0.4):
 
 def mixup_criterion(criterion, pred, y_a, y_b, lam):
     return lam * criterion(pred, y_a) + (1 - lam) * criterion(pred, y_b)
+
+
+import seaborn as sns
+from sklearn.metrics import classification_report, confusion_matrix
+
+def save_classification_report(y_true, y_pred, class_names, out_dir="."):
+    """Generates and saves a detailed per-class precision/recall/f1-score report."""
+    os.makedirs(out_dir, exist_ok=True)
+    report = classification_report(y_true, y_pred, target_names=class_names)
+    with open(os.path.join(out_dir, "classification_report.txt"), "w", encoding="utf-8") as f:
+        f.write(report)
+    print(f"Saved classification report to {os.path.join(out_dir, 'classification_report.txt')}")
+
+def plot_confusion_matrix(y_true, y_pred, class_names, out_dir="."):
+    """Plots and saves a high-resolution heatmap of the confusion matrix."""
+    os.makedirs(out_dir, exist_ok=True)
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(24, 20))
+    sns.heatmap(cm, annot=False, cmap="Blues", xticklabels=class_names, yticklabels=class_names)
+    plt.ylabel('True label', fontsize=14)
+    plt.xlabel('Predicted label', fontsize=14)
+    plt.title('Confusion Matrix', fontsize=18, fontweight="bold")
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, "confusion_matrix.png"), dpi=300)
+    plt.close()
+    print(f"Saved confusion matrix to {os.path.join(out_dir, 'confusion_matrix.png')}")
