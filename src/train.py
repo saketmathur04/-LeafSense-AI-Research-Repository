@@ -20,6 +20,26 @@ EPOCHS = 10
 LR = 3e-4
 MIXUP_ALPHA = 0.2
 
+def validate_one_epoch(model, val_loader, criterion, device):
+    """Runs one full validation epoch."""
+    model.eval()
+    val_loss = 0.0
+    val_correct = 0
+    val_total = 0
+
+    with torch.no_grad():
+        for inputs, targets in val_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+
+            val_loss += loss.item() * inputs.size(0)
+            _, predicted = outputs.max(1)
+            val_total += targets.size(0)
+            val_correct += predicted.eq(targets).sum().item()
+
+    return val_loss / val_total, val_correct / val_total
+
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
@@ -98,24 +118,7 @@ def main():
         epoch_acc = train_correct / train_total
 
         # Validation Phase
-        model.eval()
-        val_loss = 0.0
-        val_correct = 0
-        val_total = 0
-
-        with torch.no_grad():
-            for inputs, targets in val_loader:
-                inputs, targets = inputs.to(device), targets.to(device)
-                outputs = model(inputs)
-                loss = criterion(outputs, targets)
-
-                val_loss += loss.item() * inputs.size(0)
-                _, predicted = outputs.max(1)
-                val_total += targets.size(0)
-                val_correct += predicted.eq(targets).sum().item()
-
-        epoch_val_loss = val_loss / val_total
-        epoch_val_acc = val_correct / val_total
+        epoch_val_loss, epoch_val_acc = validate_one_epoch(model, val_loader, criterion, device)
 
         history['train_loss'].append(epoch_loss)
         history['val_loss'].append(epoch_val_loss)
