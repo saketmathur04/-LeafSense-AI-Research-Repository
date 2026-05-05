@@ -48,6 +48,14 @@ Once the GAN is trained, you can generate synthetic images for minority classes:
 python src/generate.py --ckpt gan_checkpoints/gan_epoch_100.pth --num_images 500 --class_idx 12 --out_dir synthetic_data
 ```
 
+## Evaluation
+
+To generate a full scikit-learn classification report and a seaborn confusion matrix for a trained model:
+```bash
+python src/eval_only.py --data ./data/plant-disease-classification-merged-dataset --ckpt checkpoints/latest_checkpoint.pth --out_dir eval_results
+```
+This will output `classification_report.txt` and a high-resolution `confusion_matrix.png`.
+
 ## Status
 
 🚧 Under active development
