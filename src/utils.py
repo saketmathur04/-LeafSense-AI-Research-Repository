@@ -109,14 +109,45 @@ def cutmix_data(x, y, alpha=1.0):
 
 import seaborn as sns
 from sklearn.metrics import classification_report, confusion_matrix
+import pandas as pd
+from matplotlib.backends.backend_pdf import PdfPages
+
+def _save_table_pages_pdf(df, pdf_path, rows_per_page=30):
+    """Saves a large Pandas DataFrame as a multi-page PDF."""
+    with PdfPages(pdf_path) as pdf:
+        num_pages = (len(df) + rows_per_page - 1) // rows_per_page
+        for page in range(num_pages):
+            fig, ax = plt.subplots(figsize=(12, 10))
+            ax.axis('tight')
+            ax.axis('off')
+            subset = df.iloc[page*rows_per_page:(page+1)*rows_per_page]
+            table = ax.table(cellText=subset.values, colLabels=subset.columns, cellLoc='center', loc='center')
+            table.auto_set_font_size(False)
+            table.set_fontsize(10)
+            table.scale(1.2, 1.2)
+            plt.title(f"Evaluation Metrics - Page {page+1}/{num_pages}", fontsize=14, pad=20)
+            pdf.savefig(fig, bbox_inches='tight')
+            plt.close(fig)
 
 def save_classification_report(y_true, y_pred, class_names, out_dir="."):
     """Generates and saves a detailed per-class precision/recall/f1-score report."""
     os.makedirs(out_dir, exist_ok=True)
+    
+    # Save standard TXT report
     report = classification_report(y_true, y_pred, target_names=class_names)
     with open(os.path.join(out_dir, "classification_report.txt"), "w", encoding="utf-8") as f:
         f.write(report)
-    print(f"Saved classification report to {os.path.join(out_dir, 'classification_report.txt')}")
+        
+    # Save multi-page PDF
+    report_dict = classification_report(y_true, y_pred, target_names=class_names, output_dict=True)
+    df = pd.DataFrame(report_dict).transpose().round(4)
+    df.reset_index(inplace=True)
+    df.columns = ['Class / Metric', 'Precision', 'Recall', 'F1-Score', 'Support']
+    
+    pdf_path = os.path.join(out_dir, "model_evaluation_table.pdf")
+    _save_table_pages_pdf(df, pdf_path)
+    
+    print(f"Saved classification report to {os.path.join(out_dir, 'classification_report.txt')} and PDF")
 
 def plot_confusion_matrix(y_true, y_pred, class_names, out_dir="."):
     """Plots and saves a high-resolution heatmap of the confusion matrix."""
