@@ -134,15 +134,16 @@ def save_classification_report(y_true, y_pred, class_names, out_dir="."):
     os.makedirs(out_dir, exist_ok=True)
     
     # Save standard TXT report
-    report = classification_report(y_true, y_pred, target_names=class_names)
+    report = classification_report(y_true, y_pred, target_names=class_names, zero_division=0)
     with open(os.path.join(out_dir, "classification_report.txt"), "w", encoding="utf-8") as f:
         f.write(report)
         
     # Save multi-page PDF
-    report_dict = classification_report(y_true, y_pred, target_names=class_names, output_dict=True)
+    report_dict = classification_report(y_true, y_pred, target_names=class_names, output_dict=True, zero_division=0)
     df = pd.DataFrame(report_dict).transpose().round(4)
     df.reset_index(inplace=True)
     df.columns = ['Class / Metric', 'Precision', 'Recall', 'F1-Score', 'Support']
+    df['Support'] = df['Support'].astype(int)
     
     pdf_path = os.path.join(out_dir, "model_evaluation_table.pdf")
     _save_table_pages_pdf(df, pdf_path)
