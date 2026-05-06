@@ -7,10 +7,11 @@ import os
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+import random
 
 from dataset import get_dataloaders
 from model import build_model
-from utils import FocalLoss, mixup_data, mixup_criterion
+from utils import FocalLoss, mixup_data, mixup_criterion, cutmix_data
 
 # Config
 DATA_DIR = "./data/plant-disease-classification-merged-dataset"
@@ -89,8 +90,11 @@ def main():
         for i, (inputs, targets) in enumerate(pbar):
             inputs, targets = inputs.to(device), targets.to(device)
             
-            # Apply MixUp
-            inputs, targets_a, targets_b, lam = mixup_data(inputs, targets, alpha=MIXUP_ALPHA)
+            # Apply MixUp or CutMix
+            if random.random() > 0.5:
+                inputs, targets_a, targets_b, lam = mixup_data(inputs, targets, alpha=MIXUP_ALPHA)
+            else:
+                inputs, targets_a, targets_b, lam = cutmix_data(inputs, targets, alpha=1.0)
 
             with torch.amp.autocast('cuda'):
                 outputs = model(inputs)
