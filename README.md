@@ -6,6 +6,27 @@ Vision Transformer (DeiT-Base) training pipeline for plant disease classificatio
 
 This repository contains the complete training implementation, evaluation metrics, and ablation studies for the LeafSense AI plant disease detection model.
 
+## 🏗️ Technical Architecture
+
+### 1. Vision Transformer Backbone
+- **Model:** Data-efficient Image Transformer (DeiT-Base)
+- **Parameters:** 86M
+- **Input Resolution:** 224x224
+- **Regularization:** Stochastic Depth (drop path), Label Smoothing, and Weight Decay (AdamW).
+
+### 2. Data Pipeline & Augmentation
+- **Stratified Splitting:** Ensures equal disease representation across Train/Val/Test sets.
+- **Class Balancing:** `WeightedRandomSampler` implemented to handle extreme frequency variance.
+- **Advanced Augmentation:** 
+  - **MixUp:** Linear interpolation of image pairs to improve decision boundary robustness.
+  - **CutMix:** Patch-based mixing to improve spatial localization.
+  - **Albumentations:** Heavy geometric and color jittering.
+
+### 3. Conditional GAN Pipeline
+- **Purpose:** Synthetic oversampling of minority disease classes (e.g., rare rusts/blights).
+- **Architecture:** Conditional DCGAN (Generator + Discriminator) with class-embedding layers.
+
+
 ## Project Structure
 
 ```
