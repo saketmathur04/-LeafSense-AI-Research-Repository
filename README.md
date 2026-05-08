@@ -27,6 +27,27 @@ This repository contains the complete training implementation, evaluation metric
 - **Architecture:** Conditional DCGAN (Generator + Discriminator) with class-embedding layers.
 
 
+## 🧪 Training Methodology
+
+### Hyperparameters
+| Parameter | Value |
+|-----------|-------|
+| Optimizer | AdamW |
+| Learning Rate | 3e-4 |
+| LR Scheduler | CosineAnnealingLR |
+| Batch Size | 32 (with 4x Gradient Accumulation) |
+| Loss Function | Focal Loss (gamma=2.0) |
+| Mixed Precision | FP16 (torch.amp) |
+| Epochs | 100 (Early Stopping patience=7) |
+
+### Optimization Strategy
+To achieve state-of-the-art performance on the 88-class LeafSense dataset, we utilized:
+1. **Focal Loss:** Specifically chosen to penalize errors on "hard" minority disease classes more than "easy" majority classes.
+2. **Mixed Augmentation:** A 50/50 toggle between MixUp and CutMix for every training batch to generalize across both global color distributions and local textures.
+3. **AMP & Gradient Accumulation:** Combined to allow for effective batch sizes of 128 even on consumer-grade hardware.
+
+
+
 ## Project Structure
 
 ```
