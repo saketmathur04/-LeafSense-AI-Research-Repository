@@ -48,6 +48,35 @@ To achieve state-of-the-art performance on the 88-class LeafSense dataset, we ut
 
 
 
+## 🚀 Getting Started
+
+### 1. Environment Setup
+```bash
+# Clone the repository
+git clone https://github.com/saketmathur04/LeafSense-AI-Research-Repository.git
+cd LeafSense-AI-Research-Repository
+
+# Create a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 2. Training the Model
+To start training the DeiT-Base model from scratch:
+```bash
+python src/train.py
+```
+
+### 3. Evaluation
+Once training is complete, evaluate the model on the test set:
+```bash
+python src/eval_only.py --data ./data/path --ckpt checkpoints/latest_checkpoint.pth --out_dir results
+```
+
+
 ## Project Structure
 
 ```
