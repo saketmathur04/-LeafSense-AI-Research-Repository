@@ -58,6 +58,22 @@ LeafSense-AI-Training/
 └── README.md
 ```
 
+## 📊 Dataset & Preprocessing
+
+### Composition
+The model is trained on the **LeafSense-AI Dataset**, a large-scale collection containing:
+- **Total Classes:** 88 disease categories (including healthy leaves).
+- **Total Images:** ~70,000 across all classes.
+- **Split Strategy:** Stratified 80% Training, 10% Validation, 10% Testing.
+
+### Preprocessing Pipeline
+We use a multi-stage preprocessing pipeline via `src/dataset.py`:
+1. **Geometric Transforms:** RandomResizedCrop (224x224), Horizontal/Vertical Flips, and ShiftScaleRotate to handle varying camera angles.
+2. **Photometric Transforms:** ColorJitter, RandomBrightnessContrast, and CLAHE to normalize lighting conditions in field-taken images.
+3. **Noise Injection:** Gaussian Noise to simulate sensor noise in low-end mobile cameras.
+4. **Normalization:** Standard ImageNet mean/std normalization.
+
+
 ## Dataset
 
 The training pipeline expects the dataset in the following structure:
