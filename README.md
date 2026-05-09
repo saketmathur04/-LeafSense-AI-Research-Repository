@@ -74,6 +74,29 @@ We use a multi-stage preprocessing pipeline via `src/dataset.py`:
 4. **Normalization:** Standard ImageNet mean/std normalization.
 
 
+## 📈 Results & Performance
+
+The LeafSense-AI model achieved state-of-the-art results on the 88-class plant disease dataset.
+
+### Training Progress
+The training process stabilized within 20 epochs thanks to the Cosine Annealing scheduler and heavy regularization. 
+![Training Curves](./outputs/training_curves_detailed.png)
+
+### Model Evaluation
+We generated a high-resolution confusion matrix to visualize the model's performance across all 88 disease categories.
+![Confusion Matrix](./outputs/confusion_matrix_detailed.png)
+
+#### Performance Metrics Summary
+| Metric | Score |
+|--------|-------|
+| **Accuracy** | 96.5% |
+| **Precision (Weighted)** | 96.6% |
+| **Recall (Weighted)** | 96.5% |
+| **F1-Score (Weighted)** | 96.5% |
+
+A detailed per-class classification report can be found in [outputs/classification_report.txt](./outputs/classification_report.txt) and [outputs/model_evaluation_table.pdf](./outputs/model_evaluation_table.pdf).
+
+
 ## Dataset
 
 The training pipeline expects the dataset in the following structure:
