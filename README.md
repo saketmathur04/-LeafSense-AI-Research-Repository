@@ -90,6 +90,15 @@ data/
 
 > **Note:** The dataset is not included in this repository due to size constraints. 
 
+## 🤖 GAN-Based Class Balancing
+
+To address the extreme long-tail distribution of plant diseases (where some common diseases have 5,000 images while rare ones have only 50), we implemented a **Generative Adversarial Network (GAN)** oversampling strategy:
+
+1. **Conditional DCGAN:** A generator learns to synthesize 64x64 leaf images conditioned on a specific disease class index.
+2. **Synthetic Injection:** Rare classes are augmented by generating 500-1000 synthetic samples per class.
+3. **Hard-Linking:** Our `src/dataset.py` includes a merging utility that hard-links these synthetic images into the training root, allowing the `WeightedRandomSampler` to draw from a much more diverse pool for minority classes.
+
+
 ## GAN Training & Synthetic Data Generation
 
 To handle extreme class imbalance in rare plant diseases, this repository includes a Conditional DCGAN implementation.
