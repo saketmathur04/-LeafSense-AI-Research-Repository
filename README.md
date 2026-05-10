@@ -187,6 +187,21 @@ The production app includes:
 - **CMS Integration:** Managing disease metadata and treatment recommendations.
 
 
-## Status
+## 📜 Citation
+If you use this research or the LeafSense-AI model in your work, please cite:
+```bibtex
+@article{mathur2024leafsense,
+  title={LeafSense-AI: Advanced Plant Disease Detection using Vision Transformers and GAN-based Oversampling},
+  author={Mathur, Saket},
+  journal={GitHub Repository},
+  year={2024}
+}
+```
 
-🚧 Under active development
+## ⚖️ License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgements
+- **timm (PyTorch Image Models):** For the incredible ViT implementations.
+- **Albumentations:** For the powerful augmentation pipeline.
+- **PlantVillage Dataset:** For the foundational images used in research.
