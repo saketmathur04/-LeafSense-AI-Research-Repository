@@ -49,7 +49,7 @@
 11. [Getting Started](#11-getting-started)
 12. [Production Deployment](#12-production-deployment)
 13. [Limitations & Future Work](#13-limitations--future-work)
-14. [Citation & License](#14-citation--license)
+14. [License & Acknowledgements](#14-license--acknowledgements)
 
 ---
 
@@ -384,17 +384,7 @@ This repository focuses on the **research and training pipeline**. The trained m
 
 ---
 
-## 14. Citation & License
-
-### Citation
-```bibtex
-@article{mathur2024leafsense,
-  title={LeafSense-AI: Advanced Plant Disease Detection using Vision Transformers and GAN-based Oversampling},
-  author={Mathur, Saket},
-  journal={GitHub Repository},
-  year={2024}
-}
-```
+## 14. License & Acknowledgements
 
 ### License
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
