@@ -175,6 +175,18 @@ python src/eval_only.py --data ./data/plant-disease-classification-merged-datase
 ```
 This will output `classification_report.txt` and a high-resolution `confusion_matrix.png`.
 
+## 🌐 Production Deployment
+
+This repository focuses on the **research and training pipeline**. For the full-stack production application (built with Next.js, FastAPI, and Sanity CMS) that utilizes these models, please visit the main repository:
+
+👉 **[LeafSense-AI Production App](https://github.com/saketmathur04/LeafSense-AI)**
+
+The production app includes:
+- **Interactive UI:** For real-time plant disease diagnosis.
+- **Scalable Backend:** Serving the DeiT-Base model via optimized inference.
+- **CMS Integration:** Managing disease metadata and treatment recommendations.
+
+
 ## Status
 
 🚧 Under active development
