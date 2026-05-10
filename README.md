@@ -93,6 +93,7 @@ We chose **DeiT-Base** (`deit_base_patch16_224`) over ResNet/EfficientNet for a 
 
 ### 3.1 Dataset & Split Strategy
 
+- **Source:** [Plant Disease Classification Merged Dataset](https://www.kaggle.com/datasets/alinedobrovsky/plant-disease-classification-merged-dataset/data) (Kaggle)
 - **Total Images:** ~81,000 across 88 disease categories (including healthy leaves)
 - **Split:** Stratified 80/10/10 (Train/Val/Test) using `StratifiedShuffleSplit` — guarantees proportional class representation
 - **Test Set:** 8,124 images
@@ -355,9 +356,8 @@ This repository focuses on the **research and training pipeline**. The trained m
 👉 **[LeafSense-AI Production App](https://github.com/saketmathur04/LeafSense-AI)**
 
 - **Frontend:** React + Vite + TypeScript with shadcn/ui components, deployed on Vercel.
-- **Backend:** Flask API serving the DeiT-Base model with real-time inference and non-leaf detection heuristics.
-- **Model Hosting:** Weights hosted on [Hugging Face Model Hub](https://huggingface.co) (~1 GB `best_vit_model.pth`).
-- **Live Demo:** Dockerized backend deployed as a [Hugging Face Space](https://huggingface.co/spaces) for instant browser-based diagnosis.
+- **Backend:** Flask API serving the DeiT-Base model with real-time inference and non-leaf detection heuristics, deployed on Hugging Face Spaces.
+- **Model Weights:** Hosted on [Hugging Face Model Hub — saketmathur04/leafsense-ai-model](https://huggingface.co/saketmathur04/leafsense-ai-model/tree/main) (~1 GB `best_vit_model.pth`).
 
 ---
 
