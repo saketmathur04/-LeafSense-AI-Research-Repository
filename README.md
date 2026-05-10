@@ -177,14 +177,15 @@ This will output `classification_report.txt` and a high-resolution `confusion_ma
 
 ## 🌐 Production Deployment
 
-This repository focuses on the **research and training pipeline**. For the full-stack production application (built with Next.js, FastAPI, and Sanity CMS) that utilizes these models, please visit the main repository:
+This repository focuses on the **research and training pipeline**. The trained model is deployed as a full-stack application:
 
 👉 **[LeafSense-AI Production App](https://github.com/saketmathur04/LeafSense-AI)**
 
 The production app includes:
-- **Interactive UI:** For real-time plant disease diagnosis.
-- **Scalable Backend:** Serving the DeiT-Base model via optimized inference.
-- **CMS Integration:** Managing disease metadata and treatment recommendations.
+- **Frontend:** React + Vite + TypeScript with shadcn/ui components, deployed on Vercel.
+- **Backend:** Flask API serving the DeiT-Base model with real-time inference and non-leaf detection heuristics.
+- **Model Hosting:** Weights hosted on [Hugging Face Model Hub](https://huggingface.co) (~1 GB `best_vit_model.pth`).
+- **Live Demo:** Dockerized backend deployed as a [Hugging Face Space](https://huggingface.co/spaces) for instant browser-based diagnosis.
 
 
 ## 📜 Citation
